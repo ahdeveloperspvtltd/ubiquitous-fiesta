@@ -2,94 +2,239 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
   <title>Bank Account Manager</title>
+
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --success: #16a34a;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: Google Sans;
+      font-weight: 400;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url("https://images.unsplash.com/photo-1556742049-0cfed4f6a45d") center / cover no-repeat;
+      opacity: 0.08;
+      z-index: -1;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav h1 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .profile {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .balance {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: var(--text);
+    }
+
+    pre {
+      margin: 0;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
+
 <body>
 
-<pre id="app" style="font-family: Century Gothic;font-weight: 400;"></pre>
+  <nav>
+    <h1>Allied Bank Pvt. Ltd</h1>
+    <img class="profile" src="https://i.pravatar.cc/100" alt="Profile">
+  </nav>
 
-<script>
-  class BankAccount {
-    #balance
+  <div class="container">
 
-    constructor(accountNumber, owner, initialBalance = 0) {
-      this.accountNumber = accountNumber
-      this.owner = owner
-      this.#balance = Number(initialBalance)
-    }
+    <div class="card">
+      <div class="label">Current Balance</div>
+      <div class="balance" id="balance">$0.00</div>
+    </div>
 
-    get balance() {
-      return this.#balance
-    }
+    <div class="card">
+      <div class="label">Amount</div>
+      <input type="number" id="amount" placeholder="Enter amount">
+      <button onclick="deposit()">Deposit</button>
+      <button class="secondary" onclick="withdraw()">Withdraw</button>
+      <button class="secondary" onclick="addInterest()">Add Interest</button>
+    </div>
 
-    credit(amount) {
-      const value = Number(amount)
-      if (value > 0) this.#balance += value
-      return this.#balance
-    }
+    <div class="card">
+      <div class="label">Account Summary</div>
+      <pre id="summary"></pre>
+    </div>
 
-    debit(amount) {
-      const value = Number(amount)
-      if (value > 0 && value <= this.#balance) {
-        this.#balance -= value
+  </div>
+
+  <script>
+    class BankAccount {
+      #balance
+
+      constructor(accountNumber, owner, balance) {
+        this.accountNumber = accountNumber
+        this.owner = owner
+        this.#balance = balance
       }
-      return this.#balance
+
+      get balance() {
+        return this.#balance
+      }
+
+      credit(amount) {
+        const v = Number(amount)
+        if (v > 0) this.#balance += v
+      }
+
+      debit(amount) {
+        const v = Number(amount)
+        if (v > 0 && v <= this.#balance) this.#balance -= v
+      }
+
+      summary() {
+        return `Account: ${this.accountNumber}
+Owner: ${this.owner}
+Balance: $${this.#balance.toFixed(2)}`
+      }
     }
 
-    summary() {
-      return [
-        `Account: ${this.accountNumber}`,
-        `Owner: ${this.owner}`,
-        `Balance: ${this.#balance}`
-      ].join('\n')
-    }
-  }
+    class SavingsAccount extends BankAccount {
+      constructor(accountNumber, owner, balance, rate) {
+        super(accountNumber, owner, balance)
+        this.rate = rate
+      }
 
-  class SavingsAccount extends BankAccount {
-    constructor(accountNumber, owner, balance, interestRate) {
-      super(accountNumber, owner, balance)
-      this.rate = interestRate
-    }
+      applyInterest() {
+        this.credit(this.balance * this.rate)
+      }
 
-    applyInterest() {
-      const updated = this.balance + this.balance * this.rate
-      this.credit(updated - this.balance)
-      return this.balance
+      summary() {
+        return super.summary() + `\nInterest Rate: ${this.rate * 100}%`
+      }
     }
 
-    summary() {
-      return super.summary() + `\nInterest Rate: ${this.rate * 100}%`
+    const account = new SavingsAccount(
+      'SA-10001',
+      'A.H Developers',
+      10000,
+      0.05
+    )
+
+    function updateUI() {
+      document.getElementById('balance').textContent =
+        `$${account.balance.toFixed(2)}`
+      document.getElementById('summary').textContent =
+        account.summary()
     }
-  }
 
-  class BankApp {
-    constructor(root) {
-      this.root = root
+    function deposit() {
+      const value = document.getElementById('amount').value
+      account.credit(value)
+      updateUI()
     }
 
-    render(text) {
-      this.root.textContent += text + '\n\n'
+    function withdraw() {
+      const value = document.getElementById('amount').value
+      account.debit(value)
+      updateUI()
     }
-  }
 
-  const ui = new BankApp(document.getElementById('app'))
+    function addInterest() {
+      account.applyInterest()
+      updateUI()
+    }
 
-  const account = new SavingsAccount(
-    'SA-90821',
-    'A.H Developers',
-    1500,
-    0.04
-  )
-
-  ui.render(account.summary())
-  account.credit(700)
-  ui.render('Deposit processed')
-  account.debit(300)
-  ui.render('Withdrawal processed')
-  account.applyInterest()
-  ui.render('Interest applied')
-  ui.render(account.summary())
-</script>
+    updateUI()
+  </script>
 
 </body>
 </html>
