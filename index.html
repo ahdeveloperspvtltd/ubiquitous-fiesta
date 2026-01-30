@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bank Account Manager</title>
+</head>
+<body>
+
+<pre id="app" style="font-family: Century Gothic;font-weight: 400;"></pre>
+
+<script>
+  class BankAccount {
+    #balance
+
+    constructor(accountNumber, owner, initialBalance = 0) {
+      this.accountNumber = accountNumber
+      this.owner = owner
+      this.#balance = Number(initialBalance)
+    }
+
+    get balance() {
+      return this.#balance
+    }
+
+    credit(amount) {
+      const value = Number(amount)
+      if (value > 0) this.#balance += value
+      return this.#balance
+    }
+
+    debit(amount) {
+      const value = Number(amount)
+      if (value > 0 && value <= this.#balance) {
+        this.#balance -= value
+      }
+      return this.#balance
+    }
+
+    summary() {
+      return [
+        `Account: ${this.accountNumber}`,
+        `Owner: ${this.owner}`,
+        `Balance: ${this.#balance}`
+      ].join('\n')
+    }
+  }
+
+  class SavingsAccount extends BankAccount {
+    constructor(accountNumber, owner, balance, interestRate) {
+      super(accountNumber, owner, balance)
+      this.rate = interestRate
+    }
+
+    applyInterest() {
+      const updated = this.balance + this.balance * this.rate
+      this.credit(updated - this.balance)
+      return this.balance
+    }
+
+    summary() {
+      return super.summary() + `\nInterest Rate: ${this.rate * 100}%`
+    }
+  }
+
+  class BankApp {
+    constructor(root) {
+      this.root = root
+    }
+
+    render(text) {
+      this.root.textContent += text + '\n\n'
+    }
+  }
+
+  const ui = new BankApp(document.getElementById('app'))
+
+  const account = new SavingsAccount(
+    'SA-90821',
+    'A.H Developers',
+    1500,
+    0.04
+  )
+
+  ui.render(account.summary())
+  account.credit(700)
+  ui.render('Deposit processed')
+  account.debit(300)
+  ui.render('Withdrawal processed')
+  account.applyInterest()
+  ui.render('Interest applied')
+  ui.render(account.summary())
+</script>
+
+</body>
+</html>
